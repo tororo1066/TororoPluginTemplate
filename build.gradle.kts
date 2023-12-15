@@ -2,13 +2,10 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import dev.s7a.gradle.minecraft.server.tasks.LaunchMinecraftServerTask
 import dev.s7a.gradle.minecraft.server.tasks.LaunchMinecraftServerTask.JarUrl
 import groovy.lang.Closure
-import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 plugins {
     kotlin("jvm") version "1.6.10"
-    id("net.minecrell.plugin-yml.bukkit") version "0.5.1"
     id("com.github.ben-manes.versions") version "0.41.0"
-    id("com.palantir.git-version") version "0.12.3"
     id("dev.s7a.gradle.minecraft.server") version "1.2.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jmailen.kotlinter") version "3.8.0"
@@ -17,33 +14,38 @@ plugins {
 val gitVersion: Closure<String> by extra
 
 val pluginVersion: String by project.ext
+val apiVersion: String by project.ext
 
 repositories {
     mavenCentral()
-    maven(url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven(url = "https://oss.sonatype.org/content/groups/public/")
+    maven(url = "https://papermc.io/repo/repository/maven-public/")
+    maven(url = "https://libraries.minecraft.net")
+    maven(url = "https://jitpack.io")
 }
 
 val shadowImplementation: Configuration by configurations.creating
 configurations["implementation"].extendsFrom(shadowImplementation)
 
 dependencies {
-    shadowImplementation(kotlin("stdlib"))
-    compileOnly("org.spigotmc:spigot-api:$pluginVersion-R0.1-SNAPSHOT")
-}
-
-configure<BukkitPluginDescription> {
-    main = "@group@.Main"
-    version = gitVersion()
-    apiVersion = "1." + pluginVersion.split(".")[1]
+    compileOnly(kotlin("stdlib"))
+    compileOnly("io.papermc.paper:paper-api:$pluginVersion-R0.1-SNAPSHOT")
+    compileOnly("com.github.tororo1066.TororoPluginAPI:base:$apiVersion")
+    shadowImplementation("com.github.tororo1066.TororoPluginAPI:TororoPluginAPI:$apiVersion")
+    compileOnly("com.github.tororo1066.TororoPluginAPI:CommandAPI:$apiVersion")
+    compileOnly("com.mojang:brigadier:1.0.18")
 }
 
 tasks.withType<ShadowJar> {
     configurations = listOf(shadowImplementation)
     archiveClassifier.set("")
-    relocate("kotlin", "@group@.libs.kotlin")
-    relocate("org.intellij.lang.annotations", "@group@.libs.org.intellij.lang.annotations")
-    relocate("org.jetbrains.annotations", "@group@.libs.org.jetbrains.annotations")
+    exclude("kotlin/**")
+    exclude("org/intellij/lang/annotations/**")
+    exclude("org/jetbrains/annotations/**")
+
+    relocate("kotlin", "tororo1066.libs.kotlin")
+    relocate("org.intellij.lang.annotations", "tororo1066.libs.org.intellij.lang.annotations")
+    relocate("org.jetbrains.annotations", "tororo1066.libs.org.jetbrains.annotations")
 }
 
 tasks.named("build") {
@@ -65,5 +67,3 @@ task<LaunchMinecraftServerTask>("buildAndLaunchServer") {
     nogui.set(true)
     agreeEula.set(true)
 }
-
-task<SetupTask>("setup")

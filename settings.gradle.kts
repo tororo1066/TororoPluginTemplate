@@ -1,1 +1,1 @@
-rootProject.name = "Man10Farming"
+rootProject.name = "PluginName"

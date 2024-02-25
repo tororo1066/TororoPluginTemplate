@@ -1,0 +1,10 @@
+name: Man10Farming
+version: '${version}'
+main: tororo1066.man10farming.Man10Farming
+api-version: 1.19
+
+depend:
+  - HolographicDisplays
+
+softdepend:
+  - NMSUtils

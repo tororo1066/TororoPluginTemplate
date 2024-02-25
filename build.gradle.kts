@@ -4,7 +4,7 @@ import dev.s7a.gradle.minecraft.server.tasks.LaunchMinecraftServerTask.JarUrl
 import groovy.lang.Closure
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.7.20"
     id("com.github.ben-manes.versions") version "0.41.0"
     id("dev.s7a.gradle.minecraft.server") version "1.2.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -30,9 +30,9 @@ configurations["implementation"].extendsFrom(shadowImplementation)
 dependencies {
     compileOnly(kotlin("stdlib"))
     compileOnly("io.papermc.paper:paper-api:$pluginVersion-R0.1-SNAPSHOT")
-    compileOnly("com.github.tororo1066.TororoPluginAPI:base:$apiVersion")
-    shadowImplementation("com.github.tororo1066.TororoPluginAPI:TororoPluginAPI:$apiVersion")
-    compileOnly("com.github.tororo1066.TororoPluginAPI:CommandAPI:$apiVersion")
+    compileOnly("tororo1066:commandapi:$apiVersion")
+    compileOnly("tororo1066:base:$apiVersion")
+    shadowImplementation("tororo1066:tororopluginapi:$apiVersion")
     compileOnly("com.mojang:brigadier:1.0.18")
 }
 

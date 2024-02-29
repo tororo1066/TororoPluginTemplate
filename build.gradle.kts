@@ -16,6 +16,8 @@ val gitVersion: Closure<String> by extra
 val pluginVersion: String by project.ext
 val apiVersion: String by project.ext
 
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+
 repositories {
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/groups/public/")

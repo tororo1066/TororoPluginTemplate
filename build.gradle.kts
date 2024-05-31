@@ -24,30 +24,72 @@ repositories {
     maven(url = "https://papermc.io/repo/repository/maven-public/")
     maven(url = "https://libraries.minecraft.net")
     maven(url = "https://jitpack.io")
+    maven {
+        url = uri("https://maven.pkg.github.com/tororo1066/TororoPluginAPI")
+        credentials {
+            username = System.getenv("GITHUB_USERNAME")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 val shadowImplementation: Configuration by configurations.creating
-configurations["implementation"].extendsFrom(shadowImplementation)
+
+val shadowAll: Configuration by configurations.creating
 
 dependencies {
-    compileOnly(kotlin("stdlib"))
+    shadowAll(kotlin("stdlib"))
     compileOnly("io.papermc.paper:paper-api:$pluginVersion-R0.1-SNAPSHOT")
-    compileOnly("tororo1066:commandapi:$apiVersion")
-    compileOnly("tororo1066:base:$apiVersion")
+    shadowAll("tororo1066:commandapi:$apiVersion")
+    shadowAll("tororo1066:base:$apiVersion")
     shadowImplementation("tororo1066:tororopluginapi:$apiVersion")
     compileOnly("com.mojang:brigadier:1.0.18")
 }
 
-tasks.withType<ShadowJar> {
+//tasks.withType<ShadowJar> {
+//    println(inputs.files.files.map { it.name })
+//    configurations = listOf(shadowImplementation)
+//    archiveClassifier.set("")
+//    println(this.name)
+//    exclude("kotlin/**")
+//    exclude("org/intellij/lang/annotations/**")
+//    exclude("org/jetbrains/annotations/**")
+//
+//    relocate("kotlin", "tororo1066.libs.kotlin")
+//    relocate("org.intellij.lang.annotations", "tororo1066.libs.org.intellij.lang.annotations")
+//    relocate("org.jetbrains.annotations", "tororo1066.libs.org.jetbrains.annotations")
+//}
+
+tasks.register("shadowNormal", ShadowJar::class) {
+    val projectName = project.name.lowercase()
+    from(sourceSets.main.get().output)
     configurations = listOf(shadowImplementation)
     archiveClassifier.set("")
     exclude("kotlin/**")
     exclude("org/intellij/lang/annotations/**")
     exclude("org/jetbrains/annotations/**")
 
-    relocate("kotlin", "tororo1066.libs.kotlin")
-    relocate("org.intellij.lang.annotations", "tororo1066.libs.org.intellij.lang.annotations")
-    relocate("org.jetbrains.annotations", "tororo1066.libs.org.jetbrains.annotations")
+    relocate("kotlin", "tororo1066.libs.${projectName}.kotlin")
+    relocate("org.intellij.lang.annotations", "tororo1066.libs.${projectName}.org.intellij.lang.annotations")
+    relocate("org.jetbrains.annotations", "tororo1066.libs.${projectName}.org.jetbrains.annotations")
+    relocate("org.mongodb", "tororo1066.libs.${projectName}.org.mongodb")
+    relocate("com.ezylang", "tororo1066.libs.${projectName}.com.ezylang")
+}
+
+tasks.register("shadowAll", ShadowJar::class) {
+    val projectName = project.name.lowercase()
+    from(sourceSets.main.get().output)
+    configurations = listOf(shadowImplementation, shadowAll)
+    archiveClassifier.set("")
+    exclude("kotlin/**")
+    exclude("org/intellij/lang/annotations/**")
+    exclude("org/jetbrains/annotations/**")
+
+    relocate("kotlin", "tororo1066.libs.${projectName}.kotlin")
+    relocate("org.intellij.lang.annotations", "tororo1066.libs.${projectName}.org.intellij.lang.annotations")
+    relocate("org.jetbrains.annotations", "tororo1066.libs.${projectName}.org.jetbrains.annotations")
+    relocate("org.mongodb", "tororo1066.libs.${projectName}.org.mongodb")
+    relocate("com.ezylang", "tororo1066.libs.${projectName}.com.ezylang")
 }
 
 tasks.named("build") {
@@ -55,17 +97,18 @@ tasks.named("build") {
 }
 
 task<LaunchMinecraftServerTask>("buildAndLaunchServer") {
+    val dir = layout.buildDirectory.get().asFile
     dependsOn("build")
     doFirst {
         copy {
-            from(buildDir.resolve("libs/${project.name}.jar"))
-            into(buildDir.resolve("MinecraftServer/plugins"))
+            from(dir.resolve("libs/${project.name}.jar"))
+            into(dir.resolve("MinecraftServer/plugins"))
         }
     }
 
     jarUrl.set(JarUrl.Paper(pluginVersion))
     jarName.set("server.jar")
-    serverDirectory.set(buildDir.resolve("MinecraftServer"))
+    serverDirectory.set(dir.resolve("MinecraftServer"))
     nogui.set(true)
     agreeEula.set(true)
 }

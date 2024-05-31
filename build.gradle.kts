@@ -34,8 +34,10 @@ repositories {
 }
 
 val shadowImplementation: Configuration by configurations.creating
+configurations["implementation"].extendsFrom(shadowImplementation)
 
 val shadowAll: Configuration by configurations.creating
+configurations["runtimeOnly"].extendsFrom(shadowAll)
 
 dependencies {
     shadowAll(kotlin("stdlib"))
@@ -45,20 +47,6 @@ dependencies {
     shadowImplementation("tororo1066:tororopluginapi:$apiVersion")
     compileOnly("com.mojang:brigadier:1.0.18")
 }
-
-//tasks.withType<ShadowJar> {
-//    println(inputs.files.files.map { it.name })
-//    configurations = listOf(shadowImplementation)
-//    archiveClassifier.set("")
-//    println(this.name)
-//    exclude("kotlin/**")
-//    exclude("org/intellij/lang/annotations/**")
-//    exclude("org/jetbrains/annotations/**")
-//
-//    relocate("kotlin", "tororo1066.libs.kotlin")
-//    relocate("org.intellij.lang.annotations", "tororo1066.libs.org.intellij.lang.annotations")
-//    relocate("org.jetbrains.annotations", "tororo1066.libs.org.jetbrains.annotations")
-//}
 
 tasks.register("shadowNormal", ShadowJar::class) {
     val projectName = project.name.lowercase()

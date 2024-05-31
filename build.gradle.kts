@@ -37,7 +37,7 @@ val shadowImplementation: Configuration by configurations.creating
 configurations["implementation"].extendsFrom(shadowImplementation)
 
 val shadowAll: Configuration by configurations.creating
-configurations["runtimeOnly"].extendsFrom(shadowAll)
+configurations["compileOnly"].extendsFrom(shadowAll)
 
 dependencies {
     shadowAll(kotlin("stdlib"))

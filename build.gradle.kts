@@ -81,12 +81,12 @@ tasks.register("shadowAll", ShadowJar::class) {
 }
 
 tasks.named("build") {
-    dependsOn("shadowJar")
+    throw IllegalStateException("Use shadowAll or shadowNormal instead of build")
 }
 
 task<LaunchMinecraftServerTask>("buildAndLaunchServer") {
     val dir = layout.buildDirectory.get().asFile
-    dependsOn("build")
+    dependsOn("shadowAll") //shadowNormalだと依存関係を解決できない
     doFirst {
         copy {
             from(dir.resolve("libs/${project.name}.jar"))

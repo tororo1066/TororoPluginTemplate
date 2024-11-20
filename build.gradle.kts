@@ -33,60 +33,26 @@ repositories {
     }
 }
 
-val shadowImplementation: Configuration by configurations.creating
-configurations["implementation"].extendsFrom(shadowImplementation)
-
-val shadowAll: Configuration by configurations.creating
-configurations["compileOnly"].extendsFrom(shadowAll)
-
 dependencies {
-    shadowAll(kotlin("stdlib"))
+    compileOnly(kotlin("stdlib"))
     compileOnly("io.papermc.paper:paper-api:$pluginVersion-R0.1-SNAPSHOT")
-    shadowAll("tororo1066:commandapi:$apiVersion")
-    shadowAll("tororo1066:base:$apiVersion")
-    shadowImplementation("tororo1066:tororopluginapi:$apiVersion")
+    compileOnly("tororo1066:commandapi:$apiVersion")
+    compileOnly("tororo1066:base:$apiVersion")
+    implementation("tororo1066:tororopluginapi:$apiVersion")
     compileOnly("com.mojang:brigadier:1.0.18")
 }
 
-tasks.register("shadowNormal", ShadowJar::class) {
-    val projectName = project.name.lowercase()
-    from(sourceSets.main.get().output)
-    configurations = listOf(shadowImplementation)
+tasks.withType<ShadowJar> {
     archiveClassifier.set("")
-    exclude("kotlin/**")
-    exclude("org/intellij/lang/annotations/**")
-    exclude("org/jetbrains/annotations/**")
-
-    relocate("kotlin", "tororo1066.libs.kotlin")
-    relocate("org.intellij.lang.annotations", "tororo1066.libs.org.intellij.lang.annotations")
-    relocate("org.jetbrains.annotations", "tororo1066.libs.org.jetbrains.annotations")
-    relocate("org.mongodb", "tororo1066.libs.${projectName}.org.mongodb")
-    relocate("com.ezylang", "tororo1066.libs.${projectName}.com.ezylang")
-}
-
-tasks.register("shadowAll", ShadowJar::class) {
-    val projectName = project.name.lowercase()
-    from(sourceSets.main.get().output)
-    configurations = listOf(shadowImplementation, shadowAll)
-    archiveClassifier.set("")
-    exclude("kotlin/**")
-    exclude("org/intellij/lang/annotations/**")
-    exclude("org/jetbrains/annotations/**")
-
-    relocate("kotlin", "tororo1066.libs.${projectName}.kotlin")
-    relocate("org.intellij.lang.annotations", "tororo1066.libs.${projectName}.org.intellij.lang.annotations")
-    relocate("org.jetbrains.annotations", "tororo1066.libs.${projectName}.org.jetbrains.annotations")
-    relocate("org.mongodb", "tororo1066.libs.${projectName}.org.mongodb")
-    relocate("com.ezylang", "tororo1066.libs.${projectName}.com.ezylang")
 }
 
 tasks.named("build") {
-    throw IllegalStateException("Use shadowAll or shadowNormal instead of build")
+    dependsOn("shadowJar")
 }
 
 task<LaunchMinecraftServerTask>("buildAndLaunchServer") {
     val dir = layout.buildDirectory.get().asFile
-    dependsOn("shadowAll") //shadowNormalだと依存関係を解決できない
+    dependsOn("shadowJar")
     doFirst {
         copy {
             from(dir.resolve("libs/${project.name}.jar"))
